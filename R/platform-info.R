@@ -93,19 +93,40 @@ parse_pandoc_version <- function(path) {
   )
 }
 
-get_quarto_version <- function() {
-  path <- Sys.which("quarto")
-  if (path == "") {
-    "NA"
-  } else {
-    tmp <- tempfile()
-    on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
-    dir.create(tmp, recursive = TRUE, showWarnings = FALSE)
-    tmp <- normalizePath(tmp, winslash = "/")
-    ver <- system2("quarto", "-V", stdout = TRUE, env = paste0("TMPDIR=", tmp))[
-      1
-    ]
+get_quarto_version <- function(use_quarto_pkg = TRUE) {
+  if (isTRUE(use_quarto_pkg) && requireNamespace("quarto", quietly = TRUE)) {
+    path <- quarto::quarto_path()
+    ver <- try(
+      {
+        quarto::quarto_version()
+      },
+      silent = TRUE
+    )
+
+    if (inherits(ver, "try-error") || is.null(path)) {
+      return("NA")
+    }
+
     paste0(ver, " @ ", path)
+  } else {
+    path <- Sys.which("quarto")
+    if (path == "") {
+      "NA"
+    } else {
+      tmp <- tempfile()
+      on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+      dir.create(tmp, recursive = TRUE, showWarnings = FALSE)
+      tmp <- normalizePath(tmp, winslash = "/")
+      ver <- system2(
+        "quarto",
+        "-V",
+        stdout = TRUE,
+        env = paste0("TMPDIR=", tmp)
+      )[
+        1
+      ]
+      paste0(ver, " @ ", path)
+    }
   }
 }
 
