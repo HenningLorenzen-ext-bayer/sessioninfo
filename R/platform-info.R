@@ -93,21 +93,22 @@ parse_pandoc_version <- function(path) {
   )
 }
 
+
+get_quarto_info_from_pkg <- function() {
+  if (!requireNamespace("quarto", quietly = TRUE))
+    return(NULL)
+
+  list(path = quarto::quarto_path(),
+       ver = quarto::quarto_version())
+}
+
 get_quarto_version <- function(use_quarto_pkg = TRUE) {
   if (isTRUE(use_quarto_pkg) && requireNamespace("quarto", quietly = TRUE)) {
-    path <- quarto::quarto_path()
-    ver <- try(
-      {
-        quarto::quarto_version()
-      },
-      silent = TRUE
-    )
+    l <- get_quarto_info_from_pkg()
 
-    if (inherits(ver, "try-error") || is.null(path)) {
-      return("NA")
-    }
+    if (is.null(l)) return("NA")
 
-    paste0(ver, " @ ", path)
+    paste0(l$ver, " @ ", l$path)
   } else {
     path <- Sys.which("quarto")
     if (path == "") {

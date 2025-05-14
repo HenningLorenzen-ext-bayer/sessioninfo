@@ -51,4 +51,14 @@ test_that("get_quarto_version", {
   local_mocked_bindings(Sys.which = function(...) "/path/to/quarto")
   local_mocked_bindings(system2 = function(...) "1.3.450")
   expect_snapshot(get_quarto_version(use_quarto_pkg = FALSE))
+
+  local_mocked_bindings(get_quarto_info_from_pkg = function(...) NULL)
+  expect_snapshot(get_quarto_version(use_quarto_pkg = TRUE))
+
+  local_mocked_bindings(
+    get_quarto_info_from_pkg = function(...)
+      list(path = "/path/to/quarto", ver = "1.3.450")
+  )
+  expect_snapshot(get_quarto_version(use_quarto_pkg = TRUE))
+
 })
